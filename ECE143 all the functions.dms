@@ -1,0 +1,140 @@
+##this code set origin at bottom left, and there is aready function to transfer the index of lists to right axis##
+def newTower():#generate a new tower with random uniformly distribution
+    import numpy as np
+    import random
+    x=random.randint(0,areaLimit-1)
+    y=random.randint(0,areaLimit-1)
+    wide = random.randint(1,areaLimit-x)
+    height=random.randint(1,areaLimit-y)
+        #random set the area
+    rawData=[x,y,wide,height]
+    #user=matplotlib.patches.Rectangle((x,y),wide,height,color='yellow')
+    return rawData
+    
+def row_max(a):
+    xx=0
+    h=0
+    max_area=0
+    for i in range(len(a)):
+        area=0
+        if a[i]==0:
+            continue
+        elif a[i]==1:
+            for j in range(i,len(a)):
+                if a[j]>0:
+                    area=area+1
+                    x=i
+                else:
+                    break
+            if area>max_area:
+                max_area=area
+                xx=x+1
+                h=1
+            
+        elif a[i]>1:
+            for k in range(1,a[i]+1):
+                area=0
+                for j in range(i,len(a)):
+                    if a[j]>=k:
+                        area=area+k
+                    else: break
+            if area>max_area:
+                max_area=area
+                xx=i+1
+                h=k
+    return max_area,xx,h
+
+
+def trim_rec(accumulate):
+    max_area=0
+    x=0
+    wide=0
+    height=0
+    y=0
+    for i in range(len(accumulate)):
+        area=row_max(accumulate[i])[0]
+        if area>max_area:
+            max_area,x,height=row_max(accumulate[i])
+            y=i+1
+            wide=max_area/height
+        else:
+            continue
+    return max_area,x+rawData[0]-1,rawData[1]+rawData[3]-y,wide,height
+import numpy as np
+import numpy as np
+import matplotlib
+import matplotlib.pyplot as plt
+import random
+areaLimit=int(input("please input the edge of the whole area"))
+fig=plt.figure()
+plt.xlim([0*areaLimit,areaLimit])
+plt.ylim([0*areaLimit,areaLimit])
+ax=fig.add_subplot(111)
+filled=np.zeros([areaLimit,areaLimit],dtype=int)
+total_area=[0]*100
+time=range(1,101)
+sum_area=0
+for n in range(100):
+    max_area,x,y,wide,height=[0,0,0,0,0]
+    rawData=newTower()
+    if n==0:
+        counts=np.zeros((rawData[3],rawData[2]),dtype=int)
+        for i in range(len(filled)):
+            for j in range(len(filled)):
+                assert filled[i][j] in [0,1]
+# #     #filled tower signal should be list of [0,1]
+        for i in range(rawData[3]):
+            for j in range(rawData[2]):
+                filled[len(filled)-rawData[1]-rawData[3]+i][rawData[0]+j]=1
+        r = lambda: random.randint(0,255)
+        c=('#%02X%02X%02X' % (r(),r(),r()))
+        user=matplotlib.patches.Rectangle((rawData[0],rawData[1]),rawData[2],rawData[3],color=c,alpha=0.5)
+        ax.add_patch(user)
+        total_area[n]=rawData[2]*rawData[3]
+    else:
+        counts=np.zeros((rawData[3],rawData[2]),dtype=int)
+        for i in range(rawData[3]):
+            for j in range(rawData[2]):
+                if filled[len(filled)-rawData[1]-rawData[3]+i][rawData[0]+j]==0:
+                    counts[i][j]=1
+                else:
+                    counts[i][j]=0
+                filled[len(filled_points)-rawData[1]-rawData[3]+i][rawData[0]+j]=1
+        accum=np.zeros((rawData[3],rawData[2]),dtype=int)
+        max_area=0
+        for i in range(0,len(counts)):
+            if i==0:
+                accum[i]=counts[i]
+        
+            else:
+                for j in range(len(counts[i])):
+                    if counts[i][j]==0:
+                        accum[i][j]=0
+                    else:
+                        accum[i][j]=accum[i-1][j]+1
+        max_area=0
+        for i in range(len(accum)):
+            area,x,height=row_max(accum[i])
+            if area>max_area:
+                max_area=area
+                max_area,x,height=row_max(accum[i])
+                y=i
+                wide=max_area/height
+            else:
+                continue
+        max_area,x,y,wide,height=trim_rec(accum)
+        new_rawData= [x,y,wide,height]
+        total_area[n]=total_area[n-1]+max_area
+        r = lambda: random.randint(0,255)
+        c=('#%02X%02X%02X' % (r(),r(),r()))
+        user=matplotlib.patches.Rectangle((new_rawData[0],new_rawData[1]),new_rawData[2],new_rawData[3],color=c,alpha=0.5)
+        ax.add_patch(user)
+    sum_area=total_area[n]
+fig1 = plt.figure
+
+   
+fig1=plt.figure()
+plt.xlim([0,100])
+plt.ylim([0,areaLimit*areaLimit])
+ax=fig1.add_subplot(111)
+ax.plot(time,total_area)
